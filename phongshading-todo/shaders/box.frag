@@ -45,17 +45,39 @@ void main()
 
 
     /*TODO2:根据phong shading方法计算ambient,diffuse,specular*/
-    vec3  ambient,diffuse,specular;
-  
-  	vec3 lightReflectColor=(ambient +diffuse + specular);
 
-    //判定是否阴影，并对各种颜色进行混合
+    vec3 norm = normalize(Normal);
+
+    // 光线方向
+    vec3 lightDir = normalize(vec3(u_lightPosition) - FragPos);
+
+    // 视线方向
+    vec3 viewDir = normalize(viewPos - FragPos);
+
+    // 反射方向
+    vec3 reflectDir = reflect(-lightDir, norm);
+
+    // 环境光
+    vec3 ambient = ambientStrength * lightColor;
+
+    // 漫反射
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diffuseStrength * diff * lightColor;
+
+    // 高光
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 specular = specularStrength * spec * lightColor;
+
+    vec3 lightReflectColor = ambient + diffuse + specular;
+
+    // 判定是否阴影
     float shadow = shadowCalculation(FragPosLightSpace, norm, lightDir);
-	
-    //vec3 resultColor =(ambient + (1.0-shadow) * (diffuse + specular))* TextureColor;
-    vec3 resultColor=(1.0-shadow/2.0)* lightReflectColor * TextureColor;
-    
-    FragColor = vec4(resultColor, 1.f);
+
+    // 颜色混合
+    vec3 resultColor = (1.0 - shadow / 2.0) * lightReflectColor * TextureColor;
+
+    FragColor = vec4(resultColor, 1.0);
 }
+
 
 
