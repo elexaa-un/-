@@ -44,40 +44,32 @@ void main()
 	vec3 halfDir = normalize(viewDir + lightDir);
 
 
-    /*TODO2:根据phong shading方法计算ambient,diffuse,specular*/
-
-    vec3 norm = normalize(Normal);
-
-    // 光线方向
-    vec3 lightDir = normalize(vec3(u_lightPosition) - FragPos);
-
-    // 视线方向
-    vec3 viewDir = normalize(viewPos - FragPos);
-
-    // 反射方向
-    vec3 reflectDir = reflect(-lightDir, norm);
-
-    // 环境光
-    vec3 ambient = ambientStrength * lightColor;
-
-    // 漫反射
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diffuseStrength * diff * lightColor;
-
-    // 高光
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-    vec3 specular = specularStrength * spec * lightColor;
-
-    vec3 lightReflectColor = ambient + diffuse + specular;
-
-    // 判定是否阴影
-    float shadow = shadowCalculation(FragPosLightSpace, norm, lightDir);
-
-    // 颜色混合
-    vec3 resultColor = (1.0 - shadow / 2.0) * lightReflectColor * TextureColor;
-
-    FragColor = vec4(resultColor, 1.0);
+	/*TODO2:根据phong shading方法计算ambient,diffuse,specular*/
+	
+	vec3 norm = normalize(Normal);
+	
+	// ambient
+	vec3 ambient = ambientStrength * lightColor;
+	
+	// diffuse
+	float diff = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = diffuseStrength * diff * lightColor;
+	
+	// specular (Blinn-Phong)
+	vec3 halfDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(norm, halfDir), 0.0), shininess);
+	vec3 specular = specularStrength * spec * lightColor;
+	
+	// combine
+	vec3 lightReflectColor = ambient + diffuse + specular;
+	
+	// shadow attenuation (not full black)
+	float shadow = shadowCalculation(FragPosLightSpace, norm, lightDir);
+	vec3 resultColor = (1.0 - shadow * 0.5) * lightReflectColor * TextureColor;
+	
+	FragColor = vec4(resultColor, 1.0);
 }
+
 
 
 
