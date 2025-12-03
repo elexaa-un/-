@@ -13,6 +13,7 @@ in vec4 FragPosLightSpace;//光源观察的片元位置
 uniform vec3 viewPos;//相机位置
 uniform vec4 u_lightPosition; //光源位置	
 uniform vec3 lightColor;//入射光颜色
+uniform float u_opacity;//透明度变量
 
 uniform sampler2D diffuseTexture;
 uniform sampler2D depthTexture;
@@ -68,7 +69,7 @@ void main()
 	float shadow = shadowCalculation(FragPosLightSpace, norm, lightDir);
 	vec3 resultColor = (1.0 - shadow * 0.5) * lightReflectColor;
 	
-	FragColor = vec4(resultColor, 1.0);
+	FragColor = vec4(resultColor, u_opacity);
 }
 
 
