@@ -22,12 +22,24 @@ uniform samplerCube cubeSampler;//盒子纹理采样器
 
 float shadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
-    float shadow=0.0;  //非阴影
-    /*TODO3: 添加阴影计算，返回1表示是阴影，返回0表示非阴影*/
-    
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+    projCoords = projCoords * 0.5 + 0.5;
+
+    if(projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 ||
+       projCoords.y < 0.0 || projCoords.y > 1.0)
+        return 0.0;
+
+    float currentDepth = projCoords.z;
+
+    float closestDepth = texture(depthTexture, projCoords.xy).r;
+
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.001);
+
+    float shadow = (currentDepth - bias) > closestDepth ? 1.0 : 0.0;
+
     return shadow;
-   
-}       
+}
 
 void main()
 {
